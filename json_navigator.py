@@ -1,19 +1,11 @@
 import requests
-# Process Json
 
-# Identifies data
-# Display data
-# Ask user for index, key
-# stores that in history
-# go back to step 1
+history = []
 
 
-user_url = None
+def processing_url(link):
+    response = requests.get(link)
 
-
-def proccessing_url(link):
-    url = link
-    response = requests.get(url)
     if response.status_code != 200:
         print("Invalid url")
         return False
@@ -21,95 +13,126 @@ def proccessing_url(link):
         return response.json()
 
 
-def identifier(parameter):
-    match parameter:
-        case dict():
-            return dict
-        case list():
-            return list
-        case None:
-            return None
-
-        
 def display_dictionary(parameter):
-    for key, value in parameter.items():
-        print(f"{key} : {value}")
-
+    print(f"\n{parameter.keys()}")
 
 def display_list(parameter):
     index = 0
+    print("\n")
     for item in parameter:
         print(f"{index} : {item}")
         index += 1
 
 
-def processed_data(*data_with_key):
-    pass
+def processed_data(data, history):
+    current_data = data
+
+    for key_index in history:
+        current_data = current_data[key_index]
+
+    return current_data
 
 
-def history(data, history, key = False, index = False):
-    if key == False: 
-        history.append(index)
-    if index == False:
-        history.append(key)
+def main():
 
-    return [data,history]
-
-
-def main(parameter):
-    # Processed json
+    # Processing json
     while True:
-        json_file = proccessing_url(parameter)
-        if not json_file:
-            print("Incorrect url or unstable internet")
-            break
+        user_link = input("Put the website link: ").replace(" ", "")
+        json_file = processing_url(user_link)
 
-    history = []
-    if len(history) == 0:
-        data = json_file
-    elif len(history) > 0:
-        data = new_data
+        if json_file is False:
+            print("Wrong link or unstable connection")
+            continue
+
+        break
 
     while True:
-        # Dictionary
-        if identifier(data) == dict:        
+        data = processed_data(json_file, history)
 
-            # Display 
-            display_dictionary(data)
+        # 1. Dictionary
+        if type(data) == dict:
 
-            # Ask user for key and stores it
             while True:
                 try:
-                    key = input("Type the key of where you want to go into")
-                    data_with_key = history(data = data, history = history, key = key)
-                    new_data = processed_data(*data_with_key)
-                except KeyError:
-                    print("Incorrect key")
+                    # Display
+                    display_dictionary(data)
+                    print(f"Your current history : {history}")
+
+                    # Ask user for key or to go back
+                    user_input = input("\nType the keyname or type back: ")
+
+                    if user_input.lower() == "back":
+                        break
+
+                    key = user_input
+                    data[key]
+                    break
+
+                except (KeyError, ValueError):
+                    print("Incorrect input")
                     continue
 
-            # go back to step 1
+            # Remove or back
+            if user_input.lower() == "back":
 
-        # List
-        if identifier(data) == list:        
+                if len(history) != 0:
+                    history.pop()
+                else:
+                    print("You're at the top already")
 
-            # Display 
-            display_list(data)
+            else:
+                # Adds history
+                history.append(key)
 
-            # Ask user for key and stores it
+            continue
+
+        # 2. List
+        if type(data) == list:
+
+
             while True:
                 try:
-                    index = input("Type the index of where you want to go into")
-                    data_with_key = history(data = data, history = history, index = index)
-                    new_data = processed_data(data_with_key)
-                    history(index = index)
-                except IndexError:
-                    print("Incorrect index")
+                    # Display
+                    display_list(data)
+                    print(f"Your current history : {history}")
+
+                    # Ask user for index
+                    user_input = input("\nType the index number or type back: ")
+
+                    if user_input.lower() == "back":
+                        break
+
+                    index = int(user_input)
+                    data[index]
+                    break
+
+                except (IndexError, ValueError):
+                    print("Incorrect input")
                     continue
 
-            # go back to step 1
+            # Remove or back
+            if user_input.lower() == "back":
 
-        # Else
+                if len(history) != 0:
+                    history.pop()
+                else:
+                    print("You're at the top already")
+
+            else:
+                history.append(index)
+
+            continue
+
+        # 3. Else
         else:
-            print("You hit the end of the array")
+            print(f"{history[-1]}: {data}")
 
-main(user_url)
+            user_input = input("Type back to return: ")
+
+            if user_input.lower() == "back":
+                if len(history) != 0:
+                    history.pop()
+                else:
+                    print("You're already at the top.")
+
+main()
