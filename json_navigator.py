@@ -1,36 +1,151 @@
 import requests
 
-history = []
+
+class JSON_Navigator:
+    def __init__(self, data):
+        self.data = data
+        self.history = []
+
+
+    def get_current_data(self):
+        current_data = self.data
+
+        for key_index in self.history:
+            current_data = current_data[key_index]
+
+        return current_data
+
+
+    def display_dictionary(self, data):
+        print("\nKeys:")
+        print(", ".join(data))
+        print()
+
+
+    def display_list(self, data):
+        print("\nIndexes:")
+        for i in range(len(data)):
+            if i < len(data) - 1:
+                print (f"{i}, ",end="")
+            else:
+                print(i,end="")
+        print()
+
+
+    def navigate(self):
+        while True:
+            current_data = self.get_current_data()
+
+            # Dictionary
+            if type(current_data) is dict:
+                self.navigate_dictionary(current_data)
+
+            # List
+            elif type(current_data) is list:
+                self.navigate_list(current_data)
+
+            # Final value
+            else:
+                while True:
+                    print(f"\nYour current history : {self.history}")
+                    print(f"\nValue: {current_data}")
+
+                    user_input = input("Type back to return: ")
+
+                    if user_input.lower() == "back":
+                        if len(self.history) != 0:
+                            self.history.pop()
+                        else:
+                            print("You're already at the top.")
+                        break
+                    else:
+                        print("Type back to continue")
+
+
+    def navigate_dictionary(self, data):
+        while True:
+            try:
+                # Display
+                self.display_dictionary(data)
+                print(f"Your current history : {self.history}")
+
+                # Ask user for valid key or to go back
+                user_input = input("\nType the keyname or type back: ")
+
+                if user_input.lower() == "back":
+                    break
+
+                key = user_input
+                data[key]
+                break
+
+            except (KeyError, ValueError):
+                print("Incorrect input")
+                continue
+
+        # Either remove and back
+        if user_input.lower() == "back":
+
+            if len(self.history) != 0:
+                self.history.pop()
+            else:
+                print("You're at the top already")
+
+        # Or add history
+        else:
+            self.history.append(key)
+
+
+    def navigate_list(self, data):
+        while True:
+            try:
+                # Display
+                self.display_list(data)
+                print(f"Your current history : {self.history}")
+
+                # Ask user for index
+                user_input = input("\nType the index number or type back: ")
+
+                if user_input.lower() == "back":
+                    break
+
+                index = int(user_input)
+                data[index]
+                break
+
+            except (IndexError, ValueError):
+                print("Incorrect input")
+                continue
+
+        # Either remove and back
+        if user_input.lower() == "back":
+
+            if len(self.history) != 0:
+                self.history.pop()
+            else:
+                print("You're at the top already")
+
+        # Or add history
+        else:
+            self.history.append(index)
 
 
 def processing_url(link):
-    response = requests.get(link)
+    try:
+        response = requests.get(link)
 
-    if response.status_code != 200:
-        print("Invalid url")
-        return False
-    else:
+        if response.status_code != 200:
+            return False
+
         return response.json()
 
-
-def display_dictionary(parameter):
-    print(f"\n{parameter.keys()}")
-
-def display_list(parameter):
-    index = 0
-    print("\n")
-    for item in parameter:
-        print(f"{index} : {item}")
-        index += 1
+    except (requests.exceptions.RequestException, ValueError):
+        return False
 
 
-def processed_data(data, history):
-    current_data = data
-
-    for key_index in history:
-        current_data = current_data[key_index]
-
-    return current_data
+def inspect_json(data):
+    navigator = JSON_Navigator(data)
+    navigator.navigate()
 
 
 def main():
@@ -46,93 +161,8 @@ def main():
 
         break
 
-    while True:
-        data = processed_data(json_file, history)
-
-        # 1. Dictionary
-        if type(data) == dict:
-
-            while True:
-                try:
-                    # Display
-                    display_dictionary(data)
-                    print(f"Your current history : {history}")
-
-                    # Ask user for key or to go back
-                    user_input = input("\nType the keyname or type back: ")
-
-                    if user_input.lower() == "back":
-                        break
-
-                    key = user_input
-                    data[key]
-                    break
-
-                except (KeyError, ValueError):
-                    print("Incorrect input")
-                    continue
-
-            # Remove or back
-            if user_input.lower() == "back":
-
-                if len(history) != 0:
-                    history.pop()
-                else:
-                    print("You're at the top already")
-
-            else:
-                # Adds history
-                history.append(key)
-
-            continue
-
-        # 2. List
-        if type(data) == list:
+    inspect_json(json_file)
 
 
-            while True:
-                try:
-                    # Display
-                    display_list(data)
-                    print(f"Your current history : {history}")
-
-                    # Ask user for index
-                    user_input = input("\nType the index number or type back: ")
-
-                    if user_input.lower() == "back":
-                        break
-
-                    index = int(user_input)
-                    data[index]
-                    break
-
-                except (IndexError, ValueError):
-                    print("Incorrect input")
-                    continue
-
-            # Remove or back
-            if user_input.lower() == "back":
-
-                if len(history) != 0:
-                    history.pop()
-                else:
-                    print("You're at the top already")
-
-            else:
-                history.append(index)
-
-            continue
-
-        # 3. Else
-        else:
-            print(f"{history[-1]}: {data}")
-
-            user_input = input("Type back to return: ")
-
-            if user_input.lower() == "back":
-                if len(history) != 0:
-                    history.pop()
-                else:
-                    print("You're already at the top.")
-
-main()
+if __name__ == "__main__":
+    main()
