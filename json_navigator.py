@@ -37,11 +37,11 @@ class JSON_Navigator:
 
             user_input = input("\nType the keyname or type a command: ")
             
-            if self.is_input_valid(user_input):
+            if self.is_input_valid(user_input, data):
                 self.execute_user_command(user_input)
                 break
 
-            print("\nInput a number or a valid command")
+            print("\nInput a key or a valid command")
             continue
 
 
@@ -61,7 +61,7 @@ class JSON_Navigator:
 
                 index = int(user_input)
 
-                if self.is_input_valid(index):
+                if self.is_input_valid(index, data):
                     self.execute_user_command(index)
                     break
 
@@ -78,7 +78,7 @@ class JSON_Navigator:
 
             user_input = input("Type back or clear to return: ")
 
-            if self.is_input_valid(user_input):
+            if self.is_input_valid(user_input, data):
                 self.execute_user_command(user_input)
                 break
             else:
@@ -95,14 +95,13 @@ class JSON_Navigator:
         return current_data
 
 
-    def is_input_valid(self,user_input):
-        current_data = self.get_current_data()
+    def is_input_valid(self,user_input,data):
 
         if  user_input in self.undo_commands and len(self.history) > 0:
             return True
-        if type(current_data) is list and 0 <= user_input < len(current_data):
+        if type(data) is list and 0 <= user_input < len(data):
             return True
-        if type(current_data) is dict and user_input in current_data:
+        if type(data) is dict and user_input in data:
             return True
 
         return False
@@ -130,8 +129,8 @@ class JSON_Navigator:
 
     def display_list(self, data):
         print("\nIndexes: ",end="")
-        if len("data") == 0:
-            print("0")
+        if len(data) == 0:
+            print("None")
         else:
             print(f"0-{len(data)-1}")
         print()
